@@ -1,0 +1,123 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <title>GreenHub 激活码提取器</title>
+    <style>
+        body {
+            font-family: 'Segoe UI', Arial, sans-serif;
+            max-width: 800px;
+            margin: 20px auto;
+            padding: 20px;
+            background-color: #f0f0f0;
+        }
+        .container {
+            background: white;
+            border-radius: 10px;
+            padding: 20px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+        }
+        h1 {
+            color: #2c3e50;
+            border-bottom: 2px solid #3498db;
+            padding-bottom: 10px;
+        }
+        #refreshBtn {
+            background: #3498db;
+            color: white;
+            border: none;
+            padding: 10px 20px;
+            border-radius: 5px;
+            cursor: pointer;
+            transition: background 0.3s;
+        }
+        #refreshBtn:hover {
+            background: #2980b9;
+        }
+        #codeList {
+            margin-top: 20px;
+            background: #f8f9fa;
+            padding: 15px;
+            border-radius: 5px;
+        }
+        .code-item {
+            padding: 8px;
+            margin: 5px 0;
+            background: white;
+            border-left: 4px solid #3498db;
+        }
+        .status {
+            margin-top: 15px;
+            padding: 10px;
+            border-radius: 5px;
+        }
+        .error {
+            background: #ffeef0;
+            color: #db2828;
+            border: 1px solid #db2828;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <h1>GreenHub 激活码提取器</h1>
+        <button id="refreshBtn">获取激活码</button>
+        <div id="statusArea"></div>
+        <div id="codeList"></div>
+    </div>
+
+    <script>
+        const authHeader = "Basic cmtfbGl2ZV81MUw5c3JLQ29GamtETjR4UGtvdEs2V0dHUHFmd2tnd3RFNkkxcTFURTlrdktzZ0s3SlQ5Mk5oaUFHeGpKeDQ0ejdHZnBzU1hZNmtpTVkyTTFWWkhFajJZVjAwbjRPS3pUSlg6";
+        
+        async function fetchCodes() {
+            const codeList = document.getElementById('codeList');
+            const statusArea = document.getElementById('statusArea');
+            
+            try {
+                statusArea.innerHTML = '<div class="status">正在请求数据...</div>';
+                codeList.innerHTML = '';
+
+                const response = await fetch('https://api.stripe.com/v1/customers', {
+                    headers: {
+                        'Authorization': authHeader
+                    }
+                });
+
+                if (!response.ok) {
+                    throw new Error(`请求失败，状态码：${response.status}`);
+                }
+
+                const data = await response.json();
+                const codes = data.data.map(customer => 
+                    customer.metadata?.license_code || '未找到激活码'
+                );
+
+                if (codes.length === 0) {
+                    codeList.innerHTML = '<div class="status">未找到任何激活码</div>';
+                    return;
+                }
+
+                codeList.innerHTML = codes.map(code => `
+                    <div class="code-item">${code}</div>
+                `).join('');
+
+                statusArea.innerHTML = `<div class="status">找到 ${codes.length} 个激活码</div>`;
+
+            } catch (error) {
+                statusArea.innerHTML = `
+                    <div class="status error">
+                        <strong>错误发生：</strong>${error.message}
+                    </div>
+                `;
+                console.error('请求出错:', error);
+            }
+        }
+
+        // 初始化按钮点击事件
+        document.getElementById('refreshBtn').addEventListener('click', fetchCodes);
+        
+        // 页面加载时自动获取一次
+        window.onload = fetchCodes;
+    </script>
+</body>
+</html>
