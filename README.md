@@ -8,3 +8,6 @@ OnlineActivators
 ::使用cmd运行,需安装chrome
 "C:\Program Files\Google\Chrome\Application\chrome.exe"  --disable-web-security --user-data-dir=C:\DWS
 ```
+## Safari方法
+在Safari浏览器中->顶部菜单栏->勾选解除跨域限制 + 接触本地文件限制
+（也就是Disable Local File Restrictions 和 Disable Cross-Origin Restrictions两个）
